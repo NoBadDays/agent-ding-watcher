@@ -3,7 +3,7 @@ set -euo pipefail
 # Usage: ./agent-ding-watcher.sh [path-to-watch]
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-DEFAULT_WATCH_FILE=".agent-done"
+DEFAULT_WATCH_FILE="$SCRIPT_DIR/.agent-done"
 WATCH_FILE="${1:-$DEFAULT_WATCH_FILE}"
 SOUND_FILE="microwave-ding.wav"
 SOUND="$SCRIPT_DIR/$SOUND_FILE"
