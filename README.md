@@ -1,45 +1,45 @@
-# Codex Microwave Ding Watcher (Linux)
+# Agent Microwave Ding Watcher (Linux)
 
-This small utility plays a **microwave-style ding** on your machine each time Codex completes a task.  
-Codex itself runs in a sandbox without audio access, so this watcher listens for file changes locally and plays the sound on your host system.
-This is a events based listener so uses virtually no resources. 
+A tiny helper that plays a **microwave-style ding** whenever your agent finishes a task. Some agents cannot play audio in the sandbox, so this watcher listens for changes to a marker file on your host and plays the sound locally. It uses inotify, so it sits idle until an event occurs.
 
 ---
 
-## 📂 Folder Contents
-
-Place these two files in the same folder:
-
-- `codex-ding-watcher.sh`
-- `microwave-ding.wav`
-
-Make codex-ding-watcher executable 
-
-`chmod +x codex-ding-watcher.sh` 
+## Setup
+```bash
+chmod +x agent-ding-watcher.sh
+```
+Keep `agent-ding-watcher.sh` and `microwave-ding.wav` in the same directory. Install `inotifywait` (`inotify-tools`) and `paplay` (`pulseaudio-utils`) so the watcher can run and play audio.
 
 ---
 
-## 🔧 Requirements
+## Usage
+```bash
+# In the directory containing the watcher and sound
+./agent-ding-watcher.sh            # watches ./.agent-done by default
 
-### 1. `inotifywait`
-Used to detect when Codex writes to `.codex-done`.
+# Or point it at another file
+./agent-ding-watcher.sh /tmp/agent-done
+```
+Leave the script running while you work. Press `Ctrl+C` to stop. You can add it to your startup/session scripts if you want it always on.
 
-Install:
+---
 
-`sudo apt install inotify-tools`
+## Instructing agents to signal completion
+Add guidance like this to your `AGENTS.md` (or equivalent):
+- After finishing a task, append a timestamp to `.agent-done` (once per task):  
+  ```bash
+  date >> .agent-done
+  ```
+- If waiting on user approval/permissions, append `waiting`:  
+  ```bash
+  echo waiting >> .agent-done
+  ```
 
-### 2 `pulseaudio-utils`
-Used to play the .wav sound
+Each write triggers the ding watcher. The file can grow indefinitely; truncate or remove it anytime if you want a fresh start.
 
-Install:
-`sudo apt install pulseaudio-utils` 
+---
 
-## Run ding-watcher 
-
-`./codex-ding-watcher.sh`
-You can make this run on startup, 
-
-## Add this to agents 
-Add this to your AGENTS.md file 
-- When you complete a task, after the final command you run for that task, append `done` to `.codex-done` via `echo done >> .codex-done` (only once per task).
-- If you are blocked waiting on user approval for a permission request, append `waiting` to `.codex-done` via `echo waiting >> .codex-done` to signal the pause.
+## Troubleshooting
+- **No ding?** Ensure `inotifywait` is installed and `./agent-ding-watcher.sh` is running in the same directory as `.agent-done` (or that you passed the correct path).
+- **Sound errors?** Install `pulseaudio-utils` (`paplay`). Confirm `microwave-ding.wav` exists next to the script.
+- **Still quiet?** Verify your system volume/output device. You can also swap in any other `.wav` by replacing `microwave-ding.wav` in the script directory.
