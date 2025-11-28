@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 set -euo pipefail
-# Usage: ./agent-ding-watcher.sh [path-to-watch]
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+
+# Prevent duplicate instances
+LOCKFILE="$SCRIPT_DIR/.agent-ding-watcher.lock"
+if [ -e "$LOCKFILE" ] && kill -0 "$(cat "$LOCKFILE")" 2>/dev/null; then
+  exit 0
+fi
+echo $$ > "$LOCKFILE"
+
+# Change Configs Here
 DEFAULT_WATCH_FILE="$SCRIPT_DIR/.agent-done"
 WATCH_FILE="${1:-$DEFAULT_WATCH_FILE}"
 SOUND_FILE="microwave-ding.wav"
 SOUND="$SCRIPT_DIR/$SOUND_FILE"
-# Delay after a file write before playing the ding (seconds).
 SLEEP_SECONDS=3
 
 fail() { echo "$1" >&2; exit 1; }
